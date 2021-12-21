@@ -15,7 +15,6 @@ import { createSavedSearchAlert } from "./mutations/createSavedSearchAlert"
 import { deleteSavedSearchMutation } from "./mutations/deleteSavedSearchAlert"
 import { updateEmailFrequency } from "./mutations/updateEmailFrequency"
 import { updateSavedSearchAlert } from "./mutations/updateSavedSearchAlert"
-import { extractPills } from "./pillExtractors"
 import {
   SavedSearchAlertFormPropsBase,
   SavedSearchAlertFormValues,
@@ -23,6 +22,7 @@ import {
   SavedSearchAlertUserAlertSettings,
   SavedSearchPill,
 } from "./SavedSearchAlertModel"
+import { SavedSearchStore } from "./SavedSearchStore"
 
 export interface SavedSearchAlertFormProps extends SavedSearchAlertFormPropsBase {
   initialValues: SavedSearchAlertFormValues
@@ -36,8 +36,6 @@ export interface SavedSearchAlertFormProps extends SavedSearchAlertFormPropsBase
 
 export const SavedSearchAlertForm: React.FC<SavedSearchAlertFormProps> = (props) => {
   const {
-    filters,
-    aggregations,
     initialValues,
     savedSearchAlertId,
     artistId,
@@ -50,15 +48,18 @@ export const SavedSearchAlertForm: React.FC<SavedSearchAlertFormProps> = (props)
   } = props
   const isUpdateForm = !!savedSearchAlertId
   const isEnabledImprovedAlertsFlow = useFeatureFlag("AREnableImprovedAlertsFlow")
+  const savedSearchPills = SavedSearchStore.useStoreState((state) => state.pills)
+  const attributes = SavedSearchStore.useStoreState((state) => state.attributes)
+  const removeValueFromAttributesByKeyAction = SavedSearchStore.useStoreActions(
+    (state) => state.removeValueFromAttributesByKeyAction
+  )
 
-  const pillsFromFilters = extractPills(filters, aggregations)
   const artistPill: SavedSearchPill = {
     label: artistName,
     value: artistId,
     paramName: FilterParamName.artistIDs,
   }
-  const initialPills = isEnabledImprovedAlertsFlow ? [artistPill, ...pillsFromFilters] : pillsFromFilters
-  const [pills, setPills] = useState(initialPills)
+  const pills = isEnabledImprovedAlertsFlow ? [artistPill, ...savedSearchPills] : savedSearchPills
 
   const tracking = useTracking()
   const { space } = useTheme()
@@ -104,10 +105,7 @@ export const SavedSearchAlertForm: React.FC<SavedSearchAlertFormProps> = (props)
             id: response.updateSavedSearch?.savedSearchOrErrors.internalID!,
           }
         } else {
-          const criteria = isEnabledImprovedAlertsFlow
-            ? getSearchCriteriaFromPills(pills)
-            : getSearchCriteriaFromFilters(artistId, filters)
-          const response = await createSavedSearchAlert(userAlertSettings, criteria)
+          const response = await createSavedSearchAlert(userAlertSettings, attributes)
 
           result = {
             id: response.createSavedSearch?.savedSearchOrErrors.internalID!,
@@ -268,11 +266,10 @@ export const SavedSearchAlertForm: React.FC<SavedSearchAlertFormProps> = (props)
   }
 
   const handleRemovePill = (deletePill: SavedSearchPill) => {
-    const updatedPills = pills.filter((pill) => {
-      return !(pill.value === deletePill.value && pill.paramName === deletePill.paramName)
+    removeValueFromAttributesByKeyAction({
+      key: deletePill.paramName,
+      value: deletePill.value,
     })
-
-    setPills(updatedPills)
   }
 
   return (
