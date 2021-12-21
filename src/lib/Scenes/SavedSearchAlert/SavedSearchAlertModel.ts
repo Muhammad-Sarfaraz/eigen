@@ -8,8 +8,6 @@ export interface SavedSearchAlertFormValues {
 }
 
 export interface SavedSearchAlertFormPropsBase {
-  filters: FilterData[]
-  aggregations: Aggregations
   artistId: string
   artistName: string
   isLoading?: boolean
@@ -30,8 +28,8 @@ export interface SavedSearchAlertUserAlertSettings {
 // Navigation
 export interface CreateSavedSearchAlertParams extends SavedSearchAlertFormPropsBase {
   me?: SavedSearchButton_me | null
-  filters: FilterData[]
-  aggregations: Aggregations
+  filters?: FilterData[]
+  aggregations?: Aggregations
   onClosePress: () => void
   onComplete: (response: SavedSearchAlertMutationResult) => void
 }

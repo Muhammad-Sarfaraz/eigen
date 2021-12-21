@@ -1,5 +1,4 @@
 import { fireEvent, waitFor } from "@testing-library/react-native"
-import { FilterParamName } from "lib/Components/ArtworkFilter/ArtworkFilterHelpers"
 import { defaultEnvironment } from "lib/relay/createEnvironment"
 import { __globalStoreTestUtils__ } from "lib/store/GlobalStore"
 import { mockEnvironmentPayload } from "lib/tests/mockEnvironmentPayload"
@@ -8,19 +7,12 @@ import { renderWithWrappersTL } from "lib/tests/renderWithWrappers"
 import { PushAuthorizationStatus } from "lib/utils/PushNotification"
 import React from "react"
 import { createMockEnvironment } from "relay-test-utils"
+import { SavedSearchStoreProvider } from "../SavedSearchStore"
 import { CreateSavedSearchContent, CreateSavedSearchContentProps } from "./CreateSavedSearchContent"
 
 jest.unmock("react-relay")
 
 const defaultProps: CreateSavedSearchContentProps = {
-  filters: [
-    {
-      displayText: "Bid",
-      paramName: FilterParamName.waysToBuyBid,
-      paramValue: true,
-    },
-  ],
-  aggregations: [],
   artistId: "artistID",
   artistName: "artistName",
   userAllowsEmails: true,
@@ -39,7 +31,15 @@ describe("CreateSavedSearchAlert", () => {
   })
 
   const TestRenderer = (props: Partial<CreateSavedSearchContentProps>) => {
-    return <CreateSavedSearchContent {...defaultProps} {...props} />
+    const attributes = {
+      atAuction: true,
+    }
+
+    return (
+      <SavedSearchStoreProvider initialData={{ attributes, aggregations: [] }}>
+        <CreateSavedSearchContent {...defaultProps} {...props} />
+      </SavedSearchStoreProvider>
+    )
   }
 
   it("renders without throwing an error", () => {
