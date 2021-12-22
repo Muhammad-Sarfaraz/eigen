@@ -1,5 +1,6 @@
+import { SearchCriteriaAttributes } from "lib/Components/ArtworkFilter/SavedSearch/types"
 import { __globalStoreTestUtils__ } from "lib/store/GlobalStore"
-import { getNamePlaceholder } from "./helpers"
+import { clearDefaultAttributes, getNamePlaceholder } from "./helpers"
 import { SavedSearchPill } from "./SavedSearchAlertModel"
 
 describe("getNamePlaceholder", () => {
@@ -24,5 +25,25 @@ describe("getNamePlaceholder", () => {
       { label: "Two", paramName: "materialsTerms", value: "two" },
     ]
     expect(getNamePlaceholder("artistName", pills)).toBe("artistName • 3 filters")
+  })
+})
+
+describe("clearDefaultAttributes", () => {
+  it("should remove all default values", () => {
+    const attributes: SearchCriteriaAttributes = {
+      materialsTerms: [],
+      colors: [],
+      priceRange: null,
+      acquireable: null,
+      sizes: ["SMALL", "MEDIUM"],
+      atAuction: true,
+      artistID: "artistID",
+    }
+
+    expect(clearDefaultAttributes(attributes)).toEqual({
+      sizes: ["SMALL", "MEDIUM"],
+      atAuction: true,
+      artistID: "artistID",
+    })
   })
 })
