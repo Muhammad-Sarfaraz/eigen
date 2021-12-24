@@ -286,6 +286,7 @@ export const SavedSearchAlertForm: React.FC<SavedSearchAlertFormProps> = (props)
           savedSearchAlertId={savedSearchAlertId}
           artistId={artistId}
           artistName={artistName}
+          isChangedFilters={initialPills.length > pills.length}
           onDeletePress={handleDeletePress}
           onSubmitPress={handleSubmit}
           onTogglePushNotification={handleTogglePushNotification}
